@@ -7,7 +7,7 @@ public class EnemyController : MonoBehaviour
     public float speed;
     public bool vertical;
     public float changeTime = 3.0f;
-
+    private RubyController rubyController; 
     public ParticleSystem smokeEffect;
     
     Rigidbody2D rigidbody2D;
@@ -23,6 +23,16 @@ public class EnemyController : MonoBehaviour
         rigidbody2D = GetComponent<Rigidbody2D>();
         timer = changeTime;
         animator = GetComponent<Animator>();
+
+        GameObject rubyControllerObject = GameObject.FindWithTag("RubyController");
+        if (rubyControllerObject != null)
+        {
+            rubyController = rubyControllerObject.GetComponent<RubyController>();
+        }
+        if (rubyController == null)
+        {
+            Debug.LogError("Cannot find RubyController script!");
+        }
     }
 
     void Update()
@@ -88,5 +98,10 @@ public class EnemyController : MonoBehaviour
         animator.SetTrigger("Fixed");
         
         smokeEffect.Stop();
+
+        if (rubyController != null)
+        {
+            rubyController.ChangeScore(1); // Increment score by 1
+        }
     }
 }

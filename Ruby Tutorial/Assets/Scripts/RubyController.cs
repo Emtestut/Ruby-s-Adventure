@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 
 
@@ -11,12 +12,14 @@ public class RubyController : MonoBehaviour
     public int maxHealth = 5;
     
     public GameObject projectilePrefab;
+    public TextMeshProUGUI scoreText;
     
     public AudioClip throwSound;
     public AudioClip hitSound;
     
     public int health { get { return currentHealth; }}
     int currentHealth;
+    public int score;
     
     public float timeInvincible = 2.0f;
     bool isInvincible;
@@ -113,6 +116,12 @@ public class RubyController : MonoBehaviour
         UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
     }
     
+    public void ChangeScore(int scoreAmount)
+    {
+       score = (score + scoreAmount);
+        
+        scoreText.text = "Fixed Robots: " + score.ToString();
+    }
     void Launch()
     {
         GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2d.position + Vector2.up * 0.5f, Quaternion.identity);
