@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
-
+using System.Runtime.Serialization;
+using System.Diagnostics;
+using Microsoft.Unity.VisualStudio.Editor;
+using UnityEngine.SceneManagement;
 
 public class RubyController : MonoBehaviour
 {
@@ -13,14 +15,18 @@ public class RubyController : MonoBehaviour
     
     public GameObject projectilePrefab;
     public TextMeshProUGUI scoreText;
-    
+
+    public TextMeshProUGUI overText;
+    public GameObject gameOver;
+    public ParticleSystem hitParticles;
+    public ParticleSystem healParticles;
     public AudioClip throwSound;
     public AudioClip hitSound;
     
     public int health { get { return currentHealth; }}
     int currentHealth;
     public int score;
-    
+    private string currentScene;
     public float timeInvincible = 2.0f;
     bool isInvincible;
     float invincibleTimer;
@@ -28,7 +34,8 @@ public class RubyController : MonoBehaviour
     Rigidbody2D rigidbody2d;
     float horizontal;
     float vertical;
-    
+    private bool isWon = false;
+
     Animator animator;
     Vector2 lookDirection = new Vector2(1,0);
     
@@ -43,48 +50,61 @@ public class RubyController : MonoBehaviour
         currentHealth = maxHealth;
 
         audioSource = GetComponent<AudioSource>();
+        hitParticles.Stop();
+        healParticles.Stop();
+        currentScene = SceneManager.GetActiveScene().name;
     }
 
     // Update is called once per frame
     void Update()
     {
-        horizontal = Input.GetAxis("Horizontal");
-        vertical = Input.GetAxis("Vertical");
-        
-        Vector2 move = new Vector2(horizontal, vertical);
-        
-        if(!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f))
+        if(!isWon)
         {
-            lookDirection.Set(move.x, move.y);
-            lookDirection.Normalize();
-        }
+            horizontal = Input.GetAxis("Horizontal");
+            vertical = Input.GetAxis("Vertical");
         
-        animator.SetFloat("Look X", lookDirection.x);
-        animator.SetFloat("Look Y", lookDirection.y);
-        animator.SetFloat("Speed", move.magnitude);
+            Vector2 move = new Vector2(horizontal, vertical);
         
-        if (isInvincible)
-        {
-            invincibleTimer -= Time.deltaTime;
-            if (invincibleTimer < 0)
-                isInvincible = false;
-        }
-        
-        if(Input.GetKeyDown(KeyCode.C))
-        {
-            Launch();
-        }
-        
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
-            if (hit.collider != null)
+            if(!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f))
             {
-                NonPlayerCharacter character = hit.collider.GetComponent<NonPlayerCharacter>();
-                if (character != null)
+                lookDirection.Set(move.x, move.y);
+                lookDirection.Normalize();
+            }
+        
+            animator.SetFloat("Look X", lookDirection.x);
+            animator.SetFloat("Look Y", lookDirection.y);
+            animator.SetFloat("Speed", move.magnitude);
+        
+            if (isInvincible)
+            {
+                invincibleTimer -= Time.deltaTime;
+                if (invincibleTimer < 0)
+                    isInvincible = false;
+            }
+        
+            if(Input.GetKeyDown(KeyCode.C))
+            {
+                Launch();
+            }
+        
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
+                if (hit.collider != null)
                 {
-                    character.DisplayDialog();
+                    NonPlayerCharacter character = hit.collider.GetComponent<NonPlayerCharacter>();
+                    if (character != null)
+                    {
+                        character.DisplayDialog();
+                    }
                 }
+            }
+        }
+        else
+        {
+            if(Input.GetKeyDown(KeyCode.R))
+            {
+                SceneManager.LoadScene(currentScene);
             }
         }
     }
@@ -109,16 +129,38 @@ public class RubyController : MonoBehaviour
             invincibleTimer = timeInvincible;
             
             PlaySound(hitSound);
+            hitParticles.Play();
+        }
+        else
+        {
+            healParticles.Play();
         }
         
-        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         
+        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
+
+        if(currentHealth <= 0)
+        {
+            isWon = true;
+            overText.text = "You lost! Press R to restart!";
+            gameOver.SetActive(true);
+
+            
+        }
     }
     
     public void ChangeScore(int scoreAmount)
     {
-       score = (score + scoreAmount);
+       score = score + scoreAmount;
+       if(score >= 4)
+        {
+            isWon = true;
+            speed = 0;
+            overText.text = "You Win! Game Created by Group #34\n" +
+                            "Press R to Restart!";
+            gameOver.SetActive(true);
+        }
         
         scoreText.text = "Fixed Robots: " + score.ToString();
     }
