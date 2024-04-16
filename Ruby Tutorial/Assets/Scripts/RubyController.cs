@@ -12,9 +12,11 @@ public class RubyController : MonoBehaviour
     public float speed = 3.0f;
     
     public int maxHealth = 5;
+    public int maxSword = 1;
     
     public GameObject projectilePrefab;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI swordText;
 
     public TextMeshProUGUI overText;
     public GameObject gameOver;
@@ -24,6 +26,7 @@ public class RubyController : MonoBehaviour
     public AudioClip hitSound;
     
     public int health { get { return currentHealth; }}
+    public int sword;
     int currentHealth;
     public int score;
     private string currentScene;
@@ -48,6 +51,8 @@ public class RubyController : MonoBehaviour
         animator = GetComponent<Animator>();
         
         currentHealth = maxHealth;
+        sword = 0;
+
 
         audioSource = GetComponent<AudioSource>();
         hitParticles.Stop();
@@ -136,7 +141,6 @@ public class RubyController : MonoBehaviour
             healParticles.Play();
         }
         
-        
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
 
@@ -149,11 +153,18 @@ public class RubyController : MonoBehaviour
             
         }
     }
+
+   public void ChangeSword(int swordAmount)
+   {
+    sword = sword + swordAmount; 
+    //Debug.Log("Sword count: " + sword); // Move this line to the next line
+    swordText.text = "Sword Found " + sword.ToString();
+   }
     
     public void ChangeScore(int scoreAmount)
     {
        score = score + scoreAmount;
-       if(score >= 4)
+       if(sword >= maxSword && score >= 4)
         {
             isWon = true;
             speed = 0;
@@ -164,6 +175,8 @@ public class RubyController : MonoBehaviour
         
         scoreText.text = "Fixed Robots: " + score.ToString();
     }
+
+
     void Launch()
     {
         GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2d.position + Vector2.up * 0.5f, Quaternion.identity);
