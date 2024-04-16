@@ -154,17 +154,14 @@ public class RubyController : MonoBehaviour
         }
     }
 
-   public void ChangeSword(int swordAmount)
-   {
-    sword = sword + swordAmount; 
-    //Debug.Log("Sword count: " + sword); // Move this line to the next line
-    swordText.text = "Sword Found " + sword.ToString();
-   }
+   
     
     public void ChangeScore(int scoreAmount)
     {
        score = score + scoreAmount;
-       if(sword >= maxSword && score >= 4)
+        
+        scoreText.text = "Fixed Robots: " + score.ToString();
+        if(score >= 4 && sword >= 1)
         {
             isWon = true;
             speed = 0;
@@ -172,9 +169,23 @@ public class RubyController : MonoBehaviour
                             "Press R to Restart!";
             gameOver.SetActive(true);
         }
-        
-        scoreText.text = "Fixed Robots: " + score.ToString();
     }
+
+    public void ChangeSword(int swordAmount)
+   {
+    sword = sword + swordAmount; 
+    //Debug.Log("Sword count: " + sword); // Move this line to the next line
+    swordText.text = "Sword Found " + sword.ToString();
+
+    if(score >= 4 && sword >= 1)
+        {
+            isWon = true;
+            speed = 0;
+            overText.text = "You Win! Game Created by Group #34\n" +
+                            "Press R to Restart!";
+            gameOver.SetActive(true);
+        }
+   }
 
 
     void Launch()
@@ -194,3 +205,4 @@ public class RubyController : MonoBehaviour
         audioSource.PlayOneShot(clip);
     }
 }
+
