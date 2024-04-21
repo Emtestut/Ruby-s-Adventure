@@ -24,6 +24,10 @@ public class RubyController : MonoBehaviour
     public ParticleSystem healParticles;
     public AudioClip throwSound;
     public AudioClip hitSound;
+
+    public AudioClip gameOverSound;
+
+    public AudioClip gameWonSound;
     
     public int health { get { return currentHealth; }}
     public int sword;
@@ -39,6 +43,8 @@ public class RubyController : MonoBehaviour
     float vertical;
     private bool isWon = false;
 
+    public GameObject backgroundMusic;
+
     Animator animator;
     Vector2 lookDirection = new Vector2(1,0);
     
@@ -52,7 +58,7 @@ public class RubyController : MonoBehaviour
         
         currentHealth = maxHealth;
         sword = 0;
-
+        backgroundMusic = GameObject.Find("BackgroundMusic");
 
         audioSource = GetComponent<AudioSource>();
         hitParticles.Stop();
@@ -149,7 +155,8 @@ public class RubyController : MonoBehaviour
             isWon = true;
             overText.text = "You lost! Press R to restart!";
             gameOver.SetActive(true);
-
+            backgroundMusic.SetActive(false);
+            PlaySound(gameOverSound);
             
         }
     }
@@ -168,6 +175,8 @@ public class RubyController : MonoBehaviour
             overText.text = "You Win! Game Created by Group #34\n" +
                             "Press R to Restart!";
             gameOver.SetActive(true);
+            backgroundMusic.SetActive(false);
+            PlaySound(gameWonSound);
         }
     }
 
